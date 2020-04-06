@@ -68,11 +68,11 @@ app.get("/info", (req, res) => {
       name: "Umesh Chinalachi",
     },
     frontend: {
-      url: "string, the url of your frontend.",
+      url: "http://168.61.171.68:3000",
     },
     language: "node.js",
     sources:
-      "string, the url of a github repository including your backend sources and your frontend sources",
+      "https://github.com/UmeshMaharshi30/ava-collaboration-app, http://168.61.171.68:4000",
     answers: {
       "1": myApproach,
       "2": addExtras,
