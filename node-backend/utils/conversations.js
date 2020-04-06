@@ -184,6 +184,7 @@ function deleteInsert(conversation, mutation) {
 }
 
 function initializeConversation(id, origin) {
+    if(!id || !origin) throw new Error("Invalid Mutation !");
   const conversation = { conversationId: id };
   conversation.text = "";
   conversation.origin = {
@@ -255,7 +256,7 @@ function getAllConversations() {
   let onGoing = Object.keys(allConversations);
   let conversations = onGoing.map((key) => {
     return {
-      conversationId: key,
+      id: key,
       lastMutation: allConversations[key].lastMutation,
       text: allConversations[key].text,
     };

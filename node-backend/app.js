@@ -36,7 +36,7 @@ function responeHandler(res, responseBody, responseCode, status) {
   res.end();
 }
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
   res.header("Access-Control-Allow-Headers", "*");
   next();
@@ -45,6 +45,13 @@ app.use(function(req, res, next) {
 app.get("/ping", function (req, res) {
   let sucessResponse = {
     msg: "pong",
+  };
+  responeHandler(res, sucessResponse, 200, true);
+});
+
+app.get("/", function (req, res) {
+  let sucessResponse = {
+    msg: "Success",
   };
   responeHandler(res, sucessResponse, 200, true);
 });
@@ -77,6 +84,14 @@ app.get("/info", (req, res) => {
 
 app.post("/mutations", (req, res) => {
   let mutation = req.body;
+  if (!validateMutation(mutation)) {
+    responeHandler(
+      res,
+      { msg: "Invalid Mutation" },
+      400,
+      false
+    );
+  }
   let conversationId = req.body.conversationId;
   let conversation = findConversation(conversationId);
   let updateConversationsList = false;
@@ -94,16 +109,17 @@ app.post("/mutations", (req, res) => {
       conversation = findConversation(conversationId);
       responeHandler(
         res,
-        { msg: "Successfull", text: conversation.text },
+        { msg: "Successful", text: conversation.text },
         201,
         true
       );
-    } else if (stateStatus == 1) { // the current state is 1 step ahead of the mutation
+    } else if (stateStatus == 1) {
+      // the current state is 1 step ahead of the mutation
       handleMutation(mutation);
       conversation = findConversation(conversationId);
       responeHandler(
         res,
-        { msg: "Successfull", text: conversation.text },
+        { msg: "Successful", text: conversation.text },
         201,
         true
       );
@@ -116,10 +132,12 @@ app.post("/mutations", (req, res) => {
         false
       );
     }
-    if(stateStatus != -1) {
-      io.sockets.to(mutation.conversationId).emit("mutation", findConversation(mutation.conversationId));
+    if (stateStatus != -1) {
+      io.sockets
+        .to(mutation.conversationId)
+        .emit("mutation", findConversation(mutation.conversationId));
     }
-    if(updateConversationsList) io.emit("updateList", getAllConversations());
+    if (updateConversationsList) io.emit("updateList", getAllConversations());
   } catch (ex) {
     responeHandler(
       res,
@@ -129,6 +147,23 @@ app.post("/mutations", (req, res) => {
     );
   }
 });
+
+function validateMutation(mutation) {
+  if (
+    !mutation.author ||
+    !mutation.conversationId ||
+    !mutation.origin ||
+    !mutation.data
+  )
+    return false;
+  if (mutation.data.type == undefined || mutation.data.index == undefined)
+    return false;
+  if (mutation.data.type === "insert" && mutation.data.text == undefined)
+    return false;
+  if (mutation.data.type === "delete" && mutation.data.length == undefined)
+    return false;
+  return true;
+}
 
 app.get("/conversations", function (req, res) {
   let conversationId = req.params.id;
@@ -145,7 +180,7 @@ app.get("/conversations/:id", function (req, res) {
   let conversationId = req.params.id;
   let conversation = findConversation(conversationId);
   let msg = conversation ? "Successful" : "Invalid ConversationId";
-  if(conversation == null) responeHandler(res, {msg}, 400, false);
+  if (conversation == null) responeHandler(res, { msg }, 400, false);
   else responeHandler(res, conversation, 200, true);
 });
 
@@ -154,7 +189,10 @@ app.delete("/conversations/:id", function (req, res) {
   let deletionStatus = deleteConversation(conversationId);
   let msg = deletionStatus ? "Successfully Deleted" : "Invalid ConversationId";
   responeHandler(res, { msg }, 204, deletionStatus);
-  if(deletionStatus) io.emit("updateList", getAllConversations());
+  if (deletionStatus) {
+    io.emit("updateList", getAllConversations());
+    io.sockets.to(conversationId).emit("deleted", { msg: "deleted" });
+  }
 });
 
 const botName = "Ava";

@@ -41,6 +41,10 @@ class Collaboration extends Component {
           this.props.history.push("/");
         }
       );
+    this.state.socket.on("deleted", (message) => {
+        alert("Conversation deleted !");
+        this.props.history.push("/");
+    })  
     this.state.socket.on("mutation", (conversation) => {
       this.setState({ prevText: this.state.collaboration.text,
       text : conversation.text,

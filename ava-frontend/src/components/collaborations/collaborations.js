@@ -37,14 +37,13 @@ class Collaborations extends Component {
 
   render() {
     const allConversations = this.state.conversations;
-    console.log(allConversations);
     return (
       <div>
           <h4 className="text-center">All conversations</h4>
           <ListGroup className="col-5 mx-auto text-center">
         {allConversations.length > 0 && allConversations.map((d) => (
-          <ListGroup.Item className="fa fa-star checked" action key={d.conversationId} href={"/collaborations/" + d.conversationId}>
-            {d.conversationId}
+          <ListGroup.Item className="fa fa-star checked" action key={d.id} href={"/collaborations/" + d.id}>
+            {d.id}
           </ListGroup.Item>
         ))}
         {allConversations.length == 0 && <ListGroup.Item disabled className="text-center"><i>- Empty -</i></ListGroup.Item>}
